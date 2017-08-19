@@ -1,6 +1,6 @@
 
 
-/* Detector is analyzing given window of signal power vs frequency in terms of
+/* Detector analyses given window of signal power vs frequency in terms of
  * peak and average power levels calculated in three parts ("left", "central" and "right")
  * with adjustable window size for averaging. Detection is based on correspondance of 
  * relation of calculated levels to target value - so for different types of signals, 
@@ -9,8 +9,8 @@
 typedef struct sSignalDetector
 {
 	char name[32]; //filled by user, optional
-	float standard_min_frequency_MHz; //min frequency where this signal type should appear, lower frequencies will have decreased probability
-	float standard_max_frequency_MHz; //max frequency where this signal type should appear, higher frequencies will have decreased probability
+	float standard_min_frequency_MHz; //min frequency where this signal type should apper, lower frequencies will have decreased probability
+	float standard_max_frequency_MHz; //max frequency where this signal type should apper, higher frequencies will have decreased probability
 
 /* For such reference signal profile:
  *	                   __
@@ -93,33 +93,68 @@ typedef struct sSignalDetector
 		}
 		
 		float out_average = 0;
+		float out_average_left = 0;
+		float out_average_right = 0;
 		float out_low_average = 0;
+		float out_low_average_left = 0;
+		float out_low_average_right = 0;
 		float out_z = 0.00000001;
+		float out_z_left = 0.00000001;
+		float out_z_right = 0.00000001;
 		float out_low_z = 0.00000001;
+		float out_low_z_left = 0.00000001;
+		float out_low_z_right = 0.00000001;
 		for(int x = 0; x < left_pos - left_width; x++)
 		{
+			out_average_left += power_array[x];
+			out_z_left++;
 			out_average += power_array[x];
 			out_z++;
 		}
 		for(int x = right_pos + right_width; x < length; x++)
 		{
+			out_average_right += power_array[x];
+			out_z_right++;
 			out_average += power_array[x];
 			out_z++;
 		}
 		out_average /= out_z;
+		out_average_left /= out_z_left;
+		out_average_right /= out_z_right;
 		for(int x = 0; x < left_pos - left_width; x++)
-			if(power_array[x] < out_average)
 		{
-			out_low_average += power_array[x];
-			out_low_z++;
+			if(power_array[x] < out_average_left)
+			{
+				out_low_average_left += power_array[x];
+				out_low_z_left++;
+			}
+			if(power_array[x] < out_average)
+			{
+				out_low_average += power_array[x];
+				out_low_z++;
+			}
 		}
 		for(int x = right_pos + right_width; x < length; x++)
-			if(power_array[x] < out_average)
 		{
-			out_low_average += power_array[x];
-			out_low_z++;
+			if(power_array[x] < out_average_right)
+			{
+				out_low_average_right += power_array[x];
+				out_low_z_right++;
+			}
+			if(power_array[x] < out_average)
+			{
+				out_low_average += power_array[x];
+				out_low_z++;
+			}
 		}
 		out_low_average /= out_low_z;
+		out_low_average_left /= out_low_z_left;
+		out_low_average_right /= out_low_z_right;
+		
+//		out_average = out_average_left;
+//		if(out_average_right > out_average) out_average = out_average_right;
+//		out_low_average = out_low_average_left;
+//		if(out_low_average_right > out_low_average) out_low_average = out_low_average_right;
 		
 		float left_power = 0;
 		float left_power_high = 0;
@@ -186,13 +221,14 @@ typedef struct sSignalDetector
 //		float center_to_right = (center_power_high - right_power_high) / center_to_background;
 		
 		float detected_score = 0;
-		
+				
 		float rel_left = left_relative_power - (left_to_background / center_to_background);
 		float rel_right = right_relative_power - (right_to_background / center_to_background);
 		rel_left = 1.0 - fabs(rel_left);
 		rel_right = 1.0 - fabs(rel_right);
 		if(rel_left < 0.01) rel_left = 0.01;
 		if(rel_right < 0.01) rel_right = 0.01;
+//		detected_score = center_to_background * rel_left * rel_right;
 		if(single_peak) detected_score = center_to_background;
 		else detected_score = center_to_background * rel_left * rel_right;
 //		printf("ds: %g, cb: %g rl %g rr %g\n", detected_score, center_to_background, rel_left, rel_right);
@@ -203,7 +239,8 @@ typedef struct sSignalDetector
 		if(center_freq > standard_max_frequency_MHz*1000000.0)
 			freq_penalty_mult = standard_max_frequency_MHz*1000000.0 / center_freq;
 
-		float detected_normalized = freq_penalty_mult*detected_score / (20.0 + detected_score);
+		detected_score *= freq_penalty_mult;
+//		float detected_normalized = freq_penalty_mult*detected_score / (20.0 + detected_score);
 		
 		*res_power = center_power;
 		
@@ -229,7 +266,7 @@ typedef struct sSignalDetector
 		float right_freq_bw = frequency_start_hz + frequency_step_hz * right_edge;
 		
 		*res_bw = right_freq_bw - left_freq_bw;
-		return detected_normalized;
+		return detected_score;
 	}
 }sSignalDetector;
 
