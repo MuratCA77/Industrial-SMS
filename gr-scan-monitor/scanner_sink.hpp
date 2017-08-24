@@ -60,6 +60,8 @@ public:
 		m_start_time(time(0)), //the start time of the scan (useful for logging/reporting/monitoring)
 		m_default_gain(def_gain)
 	{
+		current_gain = 0;
+		gain_change_timeout = 0;
 		m_current_freq = start_freq;
 		last_log_out = 0;
 		ZeroBuffer();
@@ -93,27 +95,50 @@ private:
 
 	void ProcessVector(const float *input)
 	{
-		//Add the FFT to the total
 		float sample_max = -100;
-		float signal_mod = 0;
-//		if(m_gain_mode) signal_mod = -9.5;
+		float sample_average = 0;
+		float sample_top_average = 0;
+		float avg_z = 0;
+		float avg_top_z = 0;
+		float signal_mult = 1.0;//pow(10, -(m_default_gain + current_gain) * 0.1);
 		for (unsigned int i = 0; i < m_vector_length; ++i)
 		{
-			if(sample_max < input[i] && i > 0 && i < m_vector_length-1) sample_max = input[i];
-			m_buffer[i] += input[i] + signal_mod; //if gain is turned on, shift signal to fit
+			if(i > 10 && i < m_vector_length - 10)
+			{
+				sample_average += input[i];
+				avg_z++;
+				if(sample_max < input[i]) sample_max = input[i];
+			}
+			m_buffer[i] += input[i]*signal_mult; //if gain is turned on, adjust signal to fit
 		}
+		sample_average /= avg_z;
+		for (unsigned int i = 0; i < m_vector_length; ++i)
+		{
+			if(i > 10 && i < m_vector_length - 10)
+				if(input[i] > sample_average)
+				{
+					sample_top_average += input[i];
+					avg_top_z++;
+				}
+		}
+		sample_top_average /= avg_top_z;
 		++m_count; //increment the total
 
-		if(0)if(sample_max > -20 && m_gain_mode)
-		{
-			--m_count;
-//			for (unsigned int i = 0; i < m_vector_length; ++i)
-//				m_buffer[i] = 0;
-			m_source->set_gain(0); //kinda AGC: in case of overflow, drop gain and start all over
-			m_source->set_gain_mode(0);
-			m_source->set_if_gain(0);
+		if(gain_change_timeout > 0) gain_change_timeout--;
 
-			m_gain_mode = 0;
+		if(sample_top_average > 2 && current_gain > 1 && gain_change_timeout < 1)
+		{
+			current_gain -= 8;
+			if(current_gain < 0) current_gain = 0;
+			m_source->set_gain(current_gain, "IF");
+			gain_change_timeout = 1000;
+		}
+		if(sample_top_average < 0.01 && current_gain < 39 && gain_change_timeout < 1)
+		{
+			current_gain += 8;
+			if(current_gain > 40) current_gain = 40;
+			m_source->set_gain(current_gain, "IF");
+			gain_change_timeout = 1000;
 		}
 
 		if (m_count < m_avg_size) //we haven't yet averaged over the number we intended to
@@ -124,6 +149,10 @@ private:
 		float bands0[m_vector_length]; //bands in order of frequency
 
 		Rearrange(bands0, freqs, m_current_freq, m_sps); //organise the buffer into a convenient order (saves to bands0)
+		for(unsigned int n = 0; n < m_vector_length; n++)
+		{
+			bands0[n] = 10*log10(bands0[n]) - 38.0 - (m_default_gain + current_gain);
+		}
 		PrintSignals(freqs, bands0);
 
 //		m_source->set_gain(m_default_gain); //by default, set gain to match 1dBm
@@ -136,6 +165,7 @@ private:
 		if(1){
 			for (;;) { //keep moving to the next frequency until we get to one we can listen on (copes with holes in the tunable range)
 				if (m_current_freq >= m_end_freq) { //we reached the end!
+//					m_step = -m_step;
 					//do something to end the scan
 					fprintf(stderr, "[*] Finished range, starting again\n"); //say we're exiting
 					m_current_freq = m_start_freq;
@@ -183,6 +213,7 @@ private:
 		float *f_shm = (float*)shared_memory;
 		int *i_shm = (int*)shared_memory;
 		i_shm[4] = m_vector_length;
+		f_shm[1] = current_gain + m_default_gain;
 	
 		int rpos = 0;
 		for(unsigned int r = 0; r < m_vector_length; r++)
@@ -230,9 +261,11 @@ private:
 	double m_sps;
 	time_t m_start_time;
 	int m_gain_mode; //check whether gain was turned off already
-	double m_default_gain; //gain to get signal in dBm
+	double m_default_gain; //antenna gain in dBm
+	double current_gain;
 	uint8_t *shared_memory; //memory shared with external monitor
 	double last_log_out;
+	int gain_change_timeout;
 };
 
 /* Shared pointer thing gnuradio is fond of */

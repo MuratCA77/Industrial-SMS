@@ -47,7 +47,7 @@ public:
 		iir(gr::filter::single_pole_iir_filter_ff::make(1.0, vector_length)),
 		lg(gr::blocks::nlog10_ff::make(10, vector_length, -20 * std::log10(float(vector_length)) -10 * std::log10(float(GetWindowPower() / vector_length)))),
 		/* Sink - this does most of the interesting work */
-		sink(make_scanner_sink(source, vector_length, start_freq, end_freq, sample_rate, step, avg_size, gain_m))
+		sink(make_scanner_sink(source, vector_length, start_freq, end_freq, sample_rate, step, avg_size, gain_a))
 	{
 		/* Set up the OsmoSDR Source */
 		source->set_sample_rate(sample_rate);
@@ -67,16 +67,18 @@ public:
 		{
 			source->set_gain(gain_a, "RF");
 			source->set_gain(gain_m, "BB");
-			source->set_gain(gain_if, "IF");
+//			source->set_gain(gain_if, "IF");
+			source->set_gain(0, "IF"); //AGC is working
 		}
 
 		/* Set up the connections */
 		connect(source, 0, stv, 0);
 		connect(stv, 0, fft, 0);
 		connect(fft, 0, ctf, 0);
-		connect(ctf, 0, iir, 0);
-		connect(iir, 0, lg, 0);
-		connect(lg, 0, sink, 0);
+//		connect(ctf, 0, iir, 0);
+//		connect(iir, 0, lg, 0);
+//		connect(lg, 0, sink, 0);
+		connect(ctf, 0, sink, 0);
 	}
 
 private:
