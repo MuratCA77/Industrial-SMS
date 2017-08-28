@@ -35,7 +35,7 @@ class TopBlock : public gr::top_block
 public:
 	TopBlock(double start_freq, double end_freq, double sample_rate,
 		 double fft_width, double step, unsigned int avg_size, 
-		double gain_a, float gain_m, float gain_if, float total_gain) :
+		double gain_a, float gain_m, float gain_if, float total_gain, int use_AGC) :
 		gr::top_block("Top Block"),
 		vector_length(fft_width),
 		window(GetWindow(vector_length)),
@@ -45,9 +45,8 @@ public:
 		fft(gr::fft::fft_vcc::make(vector_length, true, window, false, 1)),
 		ctf(gr::blocks::complex_to_mag_squared::make(vector_length)),
 		iir(gr::filter::single_pole_iir_filter_ff::make(1.0, vector_length)),
-		lg(gr::blocks::nlog10_ff::make(10, vector_length, -20 * std::log10(float(vector_length)) -10 * std::log10(float(GetWindowPower() / vector_length)))),
+		lg(gr::blocks::nlog10_ff::make(10, vector_length, -20 * std::log10(float(vector_length)) -10 * std::log10(float(GetWindowPower() / vector_length))))
 		/* Sink - this does most of the interesting work */
-		sink(make_scanner_sink(source, vector_length, start_freq, end_freq, sample_rate, step, avg_size, gain_a))
 	{
 		/* Set up the OsmoSDR Source */
 		source->set_sample_rate(sample_rate);
@@ -67,10 +66,15 @@ public:
 		{
 			source->set_gain(gain_a, "RF");
 			source->set_gain(gain_m, "BB");
-//			source->set_gain(gain_if, "IF");
-			source->set_gain(0, "IF"); //AGC is working
+			if(!use_AGC)
+				source->set_gain(gain_if, "IF");
+			else
+				source->set_gain(0, "IF");
 		}
 
+		float resulting_gain = source->get_gain("RF") + source->get_gain("BB") + source->get_gain("IF");
+
+		sink = make_scanner_sink(source, vector_length, start_freq, end_freq, sample_rate, step, avg_size, resulting_gain, use_AGC);
 		/* Set up the connections */
 		connect(source, 0, stv, 0);
 		connect(stv, 0, fft, 0);

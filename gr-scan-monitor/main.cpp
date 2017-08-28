@@ -37,7 +37,8 @@ int main(int argc, char **argv)
 		arguments.get_gain_a(),
 		arguments.get_gain_m(),
 		arguments.get_gain_if(),
-		arguments.get_gain_total()
+		arguments.get_gain_total(),
+		arguments.get_use_AGC()
 	);	
 	top_block.run();
 	return 0; //actually, we never get here because of the rude way in which we end the scan

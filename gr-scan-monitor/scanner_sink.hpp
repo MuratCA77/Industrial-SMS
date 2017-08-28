@@ -43,7 +43,7 @@ class scanner_sink : public gr::block
 public:
 	scanner_sink(osmosdr::source::sptr source, unsigned int vector_length, double start_freq,
 		     double end_freq, double samples_per_second, double step, 
-		unsigned int avg_size, double def_gain) :
+		unsigned int avg_size, double def_gain, int use_AGC) :
 		gr::block("scanner_sink",
 			  gr::io_signature::make(1, 1, sizeof (float) * vector_length),
 			  gr::io_signature::make(0, 0, 0)),
@@ -63,6 +63,7 @@ public:
 		current_gain = 0;
 		gain_change_timeout = 0;
 		m_current_freq = start_freq;
+		m_use_AGC = use_AGC;
 		last_log_out = 0;
 		ZeroBuffer();
 		m_gain_mode = 1; //normal gain by default
@@ -112,33 +113,37 @@ private:
 			m_buffer[i] += input[i]*signal_mult; //if gain is turned on, adjust signal to fit
 		}
 		sample_average /= avg_z;
-		for (unsigned int i = 0; i < m_vector_length; ++i)
-		{
-			if(i > 10 && i < m_vector_length - 10)
-				if(input[i] > sample_average)
-				{
-					sample_top_average += input[i];
-					avg_top_z++;
-				}
-		}
-		sample_top_average /= avg_top_z;
 		++m_count; //increment the total
 
-		if(gain_change_timeout > 0) gain_change_timeout--;
+		if(m_use_AGC)
+		{
+			for (unsigned int i = 0; i < m_vector_length; ++i)
+			{
+				if(i > 10 && i < m_vector_length - 10)
+					if(input[i] > sample_average)
+					{
+						sample_top_average += input[i];
+						avg_top_z++;
+					}
+			}
+			sample_top_average /= avg_top_z;
 
-		if(sample_top_average > 2 && current_gain > 1 && gain_change_timeout < 1)
-		{
-			current_gain -= 8;
-			if(current_gain < 0) current_gain = 0;
-			m_source->set_gain(current_gain, "IF");
-			gain_change_timeout = 1000;
-		}
-		if(sample_top_average < 0.01 && current_gain < 39 && gain_change_timeout < 1)
-		{
-			current_gain += 8;
-			if(current_gain > 40) current_gain = 40;
-			m_source->set_gain(current_gain, "IF");
-			gain_change_timeout = 1000;
+			if(gain_change_timeout > 0) gain_change_timeout--;
+
+			if(sample_top_average > 2 && current_gain > 1 && gain_change_timeout < 1)
+			{
+				current_gain -= 8;
+				if(current_gain < 0) current_gain = 0;
+				m_source->set_gain(current_gain, "IF");
+				gain_change_timeout = 1000;
+			}
+			if(sample_top_average < 0.01 && current_gain < 39 && gain_change_timeout < 1)
+			{
+				current_gain += 8;
+				if(current_gain > 40) current_gain = 40;
+				m_source->set_gain(current_gain, "IF");
+				gain_change_timeout = 1000;
+			}
 		}
 
 		if (m_count < m_avg_size) //we haven't yet averaged over the number we intended to
@@ -261,6 +266,7 @@ private:
 	double m_sps;
 	time_t m_start_time;
 	int m_gain_mode; //check whether gain was turned off already
+	int m_use_AGC;
 	double m_default_gain; //antenna gain in dBm
 	double current_gain;
 	uint8_t *shared_memory; //memory shared with external monitor
@@ -270,7 +276,7 @@ private:
 
 /* Shared pointer thing gnuradio is fond of */
 typedef boost::shared_ptr<scanner_sink> scanner_sink_sptr;
-scanner_sink_sptr make_scanner_sink(osmosdr::source::sptr source, unsigned int vector_length, double start_freq, double end_freq, double samples_per_second,double step, unsigned int avg_size, double def_gain)
+scanner_sink_sptr make_scanner_sink(osmosdr::source::sptr source, unsigned int vector_length, double start_freq, double end_freq, double samples_per_second,double step, unsigned int avg_size, double def_gain, int use_AGC)
 {
-	return boost::shared_ptr<scanner_sink>(new scanner_sink(source, vector_length, start_freq, end_freq, samples_per_second, step, avg_size, def_gain));
+	return boost::shared_ptr<scanner_sink>(new scanner_sink(source, vector_length, start_freq, end_freq, samples_per_second, step, avg_size, def_gain, use_AGC));
 }

@@ -34,7 +34,8 @@ public:
 		gain_a(0.0),
 		gain_if(0.0),
 		gain_m(0.0),
-		gain_total(0.0)
+		gain_total(0.0),
+		use_AGC(1)
 	{
 		argp_parse (&argp_i, argc, argv, 0, 0, this);
 	}
@@ -76,6 +77,7 @@ public:
 	double get_gain_m() { return gain_m; }
 	double get_gain_if() { return gain_if; }
 	double get_gain_total() { return gain_total; }
+	int get_use_AGC() { return use_AGC; }
 
 private:
 	static error_t s_parse_opt(int key, char *arg, struct argp_state *state)
@@ -118,6 +120,9 @@ private:
 		case 'G':
 			gain_total = atof(arg);
 			break;
+		case 'A':
+			use_AGC = atoi(arg);
+			break;
 		case ARGP_KEY_ARG:
 			if (state->arg_num > 0)
 				argp_usage(state);
@@ -143,6 +148,7 @@ private:
 	double gain_if;
 	double gain_m;
 	double gain_total;
+	int use_AGC;
 };
 
 argp_option Arguments::options[] = {
@@ -156,6 +162,7 @@ argp_option Arguments::options[] = {
 	{"gain_if", 'i', "GAINIF", 0, "IF gain"},
 	{"gain_ant", 't', "GAINANT", 0, "antenna gain"},
 	{"gain_total", 'G', "GAINTOTAL", 0, "total gain (overrides individual gains)"},
+	{"use_AGC", 'A', "USEAGC", 0, "use agc (0 - turn off, 1 - turn on, on by default)"},
 	{0}
 };
 
