@@ -29,16 +29,12 @@ void init_detectors()
 	detectors[0].standard_min_frequency_MHz = 0;
 	detectors[0].center_width_kHz = 20000;
 	detectors[0].side_width_kHz = 10000;
-	detectors[0].detection_threshold = 5;
-	detectors[0].bw_threshold = 3;
 
 	sprintf(detectors[1].name, "narrow");
 	detectors[1].standard_max_frequency_MHz = 99999;
 	detectors[1].standard_min_frequency_MHz = 0;
 	detectors[1].center_width_kHz = 1000;
 	detectors[1].side_width_kHz = 1000;
-	detectors[1].detection_threshold = 10;
-	detectors[1].bw_threshold = 5;
 }
 
 int debug_print = 0;
@@ -727,157 +723,6 @@ void run_detectors()
 	print_detected_signals();
 	
 	return;
-/*	int loc_max_pos = 0;
-	int loc_max_length_right = 0;
-	int loc_max_length_left = 0;
-	int min_peak_length = 3; //don't even consider spikes as signal
-	int valid_peak_length = 6;
-	int valid_max_length = 300; //30MHz, anything more won't be considered as signal
-	float min_threshold = wide_threshold; //anything less won't be considered as a signal at all
-	float in_peak_threshold = 0.7;
-	float loc_max = 0;
-//	float loc_max_freq = 0;
-//	float loc_start_bw = 0;
-//	float loc_end_bw = 0;
-	for(int d = 0; d < detectors_count; d++)
-	{
-		if(d == 1) min_threshold = narrow_threshold; //strict rules for narrow filters
-		for(int x = full_sp_min_filled_data; x < full_sp_max_filled_data; x++)
-	{
-		
-		int didx = full_sp_size*d;
-		float dlvl = full_detector_res[didx + x];
-		if(dlvl > loc_max && full_detector_res[didx + x] > min_threshold)
-		{
-			loc_max = full_detector_res[didx + x];
-			loc_max_pos = x;
-//				loc_max_freq = full_frequencies[x];
-			loc_max_length_right = 0;
-			loc_max_length_left = 0;
-		}
-		if(dlvl > in_peak_threshold * loc_max)
-		{
-			loc_max_length_right++;
-		}
-		else
-		{
-			if(loc_max_length_right > min_peak_length)
-			{
-				for(int y = loc_max_pos; y > 0; y--)
-				{
-					if(full_detector_res[didx + y] < in_peak_threshold * loc_max) break;
-					loc_max_length_left++;
-				}
-				int lng = loc_max_length_left + loc_max_length_right;
-				if(lng >= valid_peak_length && lng < valid_max_length)
-				{
-					float center_freq = 0.5*(full_frequencies[loc_max_pos + loc_max_length_right] + full_frequencies[loc_max_pos - loc_max_length_left]) * 0.000001;
-					float sig_power = full_detector_power[didx + loc_max_pos];
-					float sig_bw = (full_frequencies[loc_max_pos + loc_max_length_right] - full_frequencies[loc_max_pos - loc_max_length_left])* 0.000001;
-					float avg_power = 0;
-					float max_power = no_signal_value;
-					float min_power = 0;
-					float avgZ = 0;
-					for(int px = loc_max_pos - loc_max_length_left; px < loc_max_pos + loc_max_length_right; px++)
-					{
-						if(full_spectrum_proc[px] > max_power) max_power = full_spectrum_proc[px];
-						if(full_spectrum_proc[px] < min_power) min_power = full_spectrum_proc[px];
-						avg_power += full_spectrum_proc[px];
-						avgZ++;
-					}
-					avg_power /= avgZ;
-
-					sig_power = 0.7*avg_power + 0.3*max_power;
-
-					int bw_start = loc_max_pos - loc_max_length_left, bw_end = loc_max_pos + loc_max_length_right;
-					float sp_avgs = avg_power * 0.9;
-					for(int px = loc_max_pos; px < loc_max_pos + loc_max_length_right; px++)
-					{
-						sp_avgs *= 0.3;
-						sp_avgs += 0.7*full_spectrum_proc[px];
-						if(sp_avgs < avg_power*1.05)
-						{
-							bw_end = px;
-							break;
-						}
-					}
-					sp_avgs = avg_power * 1.1;
-					for(int px = loc_max_pos+1; px > loc_max_pos - loc_max_length_left; px--)
-					{
-						sp_avgs *= 0.3;
-						sp_avgs += 0.7*full_spectrum_proc[px];
-						if(sp_avgs < avg_power*1.05)
-						{
-							bw_start = px;
-							break;
-						}
-					}
-					
-					avg_power = 0;
-					max_power = no_signal_value;
-					min_power = 0;
-					avgZ = 0;
-					for(int px = bw_start; px < bw_end; px++)
-					{
-						if(full_spectrum_proc[px] > max_power) max_power = full_spectrum_proc[px];
-						if(full_spectrum_proc[px] < min_power) min_power = full_spectrum_proc[px];
-						avg_power += full_spectrum_proc[px];
-						avgZ++;
-					}
-					avg_power /= avgZ;
-					sig_power = 0.7*avg_power + 0.3*max_power;
-					
-					float below_avg = 0;
-					for(int px = bw_start; px < bw_end; px++)
-						if(full_spectrum_proc[px] < avg_power) below_avg += 1.0;
-					below_avg /= (float)(bw_end - bw_start);
-					
-					sig_bw = (full_frequencies[bw_end] - full_frequencies[bw_start])*0.000001;
-					center_freq = 0.5*(full_frequencies[bw_end] + full_frequencies[bw_start]) * 0.000001;
-					if(sig_bw > 0.5) sig_bw -= 0.2; //compensate for edge effects for too narrow bands
-					if(sig_bw > 0.6) sig_bw -= 0.2;
-
-					double pow_integr = 0.00000001;
-					double pow_high_05 = 0.00000001;
-					for(int px = bw_start; px < bw_end; px++)
-					{
-						pow_integr += pow(10.0, full_spectrum_proc[px] * 0.1);
-						if(full_spectrum_proc[px] > min_power + 0.5*(max_power - min_power))
-							pow_high_05 += pow(10.0, full_spectrum_proc[px] * 0.1);
-					}
-
-					sig_power = 10.0 * log10(pow_integr);
-					float sig_power_high_05 = 10.0 * log10(pow_high_05);
-					
-					if(sig_power_high_05 < sig_power-3) continue; //too unequal power
-
-					if(!has_detected)
-					{
-						printf("\nDetected signals:\n");
-						has_detected = 1;
-					}
-					//printf("F %.1f P %.0f BW %.1f sdv %g mm %g\n", center_freq, sig_power, sig_bw, power_sdv, max_power - min_power);
-					if(sig_power > -80 && below_avg < 0.7)
-					if((d == 0 && sig_bw > 4.5 ) || (d == 1 && sig_bw < 5) )
-					{
-						add_detected_signal(d, center_freq, sig_bw, sig_power);
-						//printf("\ttype: %s F %.1f MHz pow %g pow09 %g\n", detectors[d].name, center_freq, sig_power, sig_power_high_05);
-						
-					}
-//							printf("\ttype: %s F %.1f MHz P %.0f dBm BW %.1f MHz\n", detectors[d].name, center_freq, sig_power, sig_bw);
-				}
-			}
-			loc_max = 0;
-			loc_max_length_left = 0;
-			loc_max_length_right = 0;
-		}
-	}
-	
-	}
-	if(!has_detected)
-		printf("\n no signals detected \n");
-	else
-		print_detected_signals();*/
 }
 
 int main(int argc, char* argv[])

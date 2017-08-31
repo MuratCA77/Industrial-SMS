@@ -64,12 +64,17 @@ public:
 			source->set_gain(total_gain);
 		else
 		{
-			source->set_gain(gain_a, "RF");
 			source->set_gain(gain_m, "BB");
 			if(!use_AGC)
+			{
+				source->set_gain(gain_a, "RF");
 				source->set_gain(gain_if, "IF");
+			}
 			else
+			{
+				source->set_gain(0, "RF");
 				source->set_gain(0, "IF");
+			}
 		}
 
 		float resulting_gain = source->get_gain("RF") + source->get_gain("BB") + source->get_gain("IF");

@@ -60,23 +60,29 @@ public:
 		m_start_time(time(0)), //the start time of the scan (useful for logging/reporting/monitoring)
 		m_default_gain(def_gain)
 	{
-		current_gain = 0;
+		current_gain_RF = 0;
+		current_gain_IF = 0;
+		rf_gain_mod = 0; //compensation for RF gain not equal to 14dB in hardware
+		agc_threshold_low = 0.01;
+		agc_threshold_high = 2.0;
+		agc_power_level = 0.5*(agc_threshold_high + agc_threshold_low); //init at value that won't force gain change at the beginning
+
 		gain_change_timeout = 0;
 		m_current_freq = start_freq;
 		m_use_AGC = use_AGC;
+
 		last_log_out = 0;
 		ZeroBuffer();
-		m_gain_mode = 1; //normal gain by default
-		    key_t key = 47192032; //some random number that must be the same in monitor shared mem module
-		    int shmid;
+		key_t key = 47192032; //some random number that must be the same in monitor shared mem module
+		int shmid;
 
-		    if ((shmid = shmget(key, SHM_SIZE, IPC_CREAT | 0666)) < 0) {
-			printf("shmget error!\n");
-		    }
+		if ((shmid = shmget(key, SHM_SIZE, IPC_CREAT | 0666)) < 0) {
+		printf("shmget error!\n");
+		}
 
-		    if ((shared_memory = (uint8_t*)shmat(shmid, NULL, 0)) == (uint8_t *) -1) {
-			printf("shmat error!\n");
-		    }
+		if ((shared_memory = (uint8_t*)shmat(shmid, NULL, 0)) == (uint8_t *) -1) {
+		printf("shmat error!\n");
+		}
 	}
 
 	virtual ~scanner_sink()
@@ -115,6 +121,8 @@ private:
 		sample_average /= avg_z;
 		++m_count; //increment the total
 
+		if(current_gain_RF > 1) rf_gain_mod = -8;
+		else rf_gain_mod = 0;
 		if(m_use_AGC)
 		{
 			for (unsigned int i = 0; i < m_vector_length; ++i)
@@ -128,21 +136,33 @@ private:
 			}
 			sample_top_average /= avg_top_z;
 
+			agc_power_level *= 0.9;
+			agc_power_level += 0.1 * sample_top_average;
+
 			if(gain_change_timeout > 0) gain_change_timeout--;
 
-			if(sample_top_average > 2 && current_gain > 1 && gain_change_timeout < 1)
+			if(agc_power_level < agc_threshold_low && gain_change_timeout < 1) //increase gain
 			{
-				current_gain -= 8;
-				if(current_gain < 0) current_gain = 0;
-				m_source->set_gain(current_gain, "IF");
-				gain_change_timeout = 1000;
+				if(current_gain_RF < 1)
+					current_gain_RF = 14;
+				else
+					current_gain_IF += 8;
+				if(current_gain_IF > 40) current_gain_IF = 40;
+				m_source->set_gain(current_gain_RF, "RF");
+				m_source->set_gain(current_gain_IF, "IF");
+				gain_change_timeout = 200;
 			}
-			if(sample_top_average < 0.01 && current_gain < 39 && gain_change_timeout < 1)
+
+			if(agc_power_level > agc_threshold_high && gain_change_timeout < 1) //decrease gain
 			{
-				current_gain += 8;
-				if(current_gain > 40) current_gain = 40;
-				m_source->set_gain(current_gain, "IF");
-				gain_change_timeout = 1000;
+				if(current_gain_IF > 0)
+					current_gain_IF -= 8;
+				else
+					current_gain_RF = 0;
+				if(current_gain_IF < 0) current_gain_IF = 0;
+				m_source->set_gain(current_gain_RF, "RF");
+				m_source->set_gain(current_gain_IF, "IF");
+				gain_change_timeout = 200;
 			}
 		}
 
@@ -156,7 +176,7 @@ private:
 		Rearrange(bands0, freqs, m_current_freq, m_sps); //organise the buffer into a convenient order (saves to bands0)
 		for(unsigned int n = 0; n < m_vector_length; n++)
 		{
-			bands0[n] = 10*log10(bands0[n]) - 38.0 - (m_default_gain + current_gain);
+			bands0[n] = 10*log10(bands0[n]) - 38.0 - (m_default_gain + current_gain_IF + current_gain_RF + rf_gain_mod);
 		}
 		PrintSignals(freqs, bands0);
 
@@ -218,7 +238,7 @@ private:
 		float *f_shm = (float*)shared_memory;
 		int *i_shm = (int*)shared_memory;
 		i_shm[4] = m_vector_length;
-		f_shm[1] = current_gain + m_default_gain;
+		f_shm[1] = current_gain_IF + current_gain_RF + rf_gain_mod + m_default_gain;
 	
 		int rpos = 0;
 		for(unsigned int r = 0; r < m_vector_length; r++)
@@ -267,8 +287,14 @@ private:
 	time_t m_start_time;
 	int m_gain_mode; //check whether gain was turned off already
 	int m_use_AGC;
-	double m_default_gain; //antenna gain in dBm
-	double current_gain;
+	double m_default_gain; //BB gain in dBm
+	double agc_power_level;
+	double agc_threshold_low;
+	double agc_threshold_high;
+	double current_gain_RF;
+	double current_gain_IF;
+	double rf_gain_mod;
+	
 	uint8_t *shared_memory; //memory shared with external monitor
 	double last_log_out;
 	int gain_change_timeout;
