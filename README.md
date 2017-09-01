@@ -40,3 +40,22 @@ monitor
 ### Sample Output
 
 (include some sample output, and screen shots)
+
+# Principles of Operation
+The SMS runs continously, measuring the power at samples in a small frequency range over a short period of time, and computing a fast Fourier transform (FFT) to identify frequency components present. 
+(Detail the operation of the SMS, including what is configurable)
+* start frequency
+* stop frequency
+* step size
+* scan bandwidth)
+* dwell time
+* FFT size
+## Calibration
+(How to calibrate it, with indications to what command-line options or source code variables to set)
+## Thresholding
+(How thresholding is done to miniimze false alarms, and how it is configured)
+## Adataptive Gain Control
+(How AGC is done)
+
+# Limitations and Future Work
+(Here is where you would show how the SMS would figure as a node in a larger system; what other hardware could be used)
