@@ -14,9 +14,9 @@ The low-cost hardware platform chosen for this prototype was HackRF One which ha
 
 ## Installation
 
-(How ton install it, e.g., what Ubuntu version you need, installing Gnu Radio, HackRF, firmware)
+(How to install it, e.g., what Ubuntu version you need, installing Gnu Radio, HackRF, firmware)
 ### Ubuntu
-The SMS has been tested on Ubuntu Linux 14.04 LTS. Installation instructions for Ubuntu can be found on [help.ubuntu.com/14.04/installation-guide](https://help.ubuntu.com/14.04/installation-guide/).
+The ISMS has been tested on Ubuntu Linux 14.04 LTS. Installation instructions for Ubuntu can be found on [help.ubuntu.com/14.04/installation-guide](https://help.ubuntu.com/14.04/installation-guide/).
 
 ### Gnu Radio
 (How to install Gnu Radio)
