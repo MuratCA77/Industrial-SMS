@@ -1,7 +1,15 @@
 # Industrial-SMS
-The Industrial Spectrum Monitoring System (SMS) is an application based on Gnu Radio that monitors the radio frequency (RF) spectrum and reports metrics on discovered signals. These metrics include the frequency, bandwith, and power of discovered signals, with timestamps. 
+Spectrum Monitoring serves as the eyes and ears of the spectrum management process helping spectrum managers to plan and use frequencies, avoid incompatible usage, and identify sources of harmful interference. The key objective for this research at the National Institute of Standards and Technology (NIST) is to develop a prototype for spectral analysis of both licensed and unlicensed radio frequency (RF) bands, allowing the monitoring of the industrial environment and the access of that information in a simple way for use at industrial facilities, including factories, warehouse and discrete manufacturing, assembly, robotics, oil and gas refineries, and water and wastewater treatment plants.
 
-(How it is intended to be used, the industrial environment targeted)
+This prototype called Industrial Spectrum Monitoring System (ISMS) is an application based on GNU Radio that monitors the RF spectrum and reports metrics on discovered signals. These metrics include the frequency, bandwith, and power of discovered signals, with timestamps. 
+
+The prototype is directed toward facilities which use wireless sensing where unexpected improper operation may create a safety risk or cause economic loss. The intended user can be varied, including the followings:
+* System integrators who design or implement a spectrum monitoring system
+* Plant operators who are trying to understand implications as they apply a spectrum monitoring system to help mitigate the impacts to business operations
+* Information Technology (IT) and Operational Technology (OT) security officers interested in monitoring electromagnetic spectrum for intrusions and anomalies
+* Device manufacturers developing products which will be deployed as part of a spectrum monitoring system
+
+
 
 (Include a more complete description about the basis on Gnu Radio, the hardware tested, limitations, example)
 
