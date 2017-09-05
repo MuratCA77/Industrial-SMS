@@ -22,10 +22,10 @@ The ISMS has been tested on Ubuntu Linux 14.04 LTS. Installation instructions fo
 ### GNU Radio
 The installation instructions for GNU Radio software development toolkit providing digital signal processing blocks to design software-defined radios can be found on [Installing GNU Radio](https://github.com/mossmann/hackrf/wiki/Operating-System-Tips).
 
-### HackRF
-The hardware specs for the low-cost platform HackRF One can be found on [HackRF One Specs](https://github.com/mossmann/hackrf/wiki/HackRF-One).
+### HackRF One
+The hardware specs for the low-cost platform HackRF One can be found on [HackRF One Specs](https://github.com/mossmann/hackrf/wiki/HackRF-One). [Where to Buy](http://greatscottgadgets.com/wheretobuy/) will provide the user with information on how to get HackRF One and [This Video Tutorial](http://greatscottgadgets.com/sdr/5/) is especially essential to understand the firmware configuration of this specific hardware. 
 
-## Running the SMS
+## Running the ISMS
 
 (How to run it, i.e., what you type at the command line)
 
