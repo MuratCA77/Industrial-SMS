@@ -9,9 +9,8 @@ The prototype is directed toward facilities which use wireless sensing where une
 * Information Technology (IT) and Operational Technology (OT) security officers interested in monitoring electromagnetic spectrum for intrusions and anomalies
 * Device manufacturers developing products which will be deployed as part of a spectrum monitoring system
 
+The low-cost hardware platform chosen for this prototype was HackRF One which has its own limitations, such as fairly poor sensitivity. Further steps may be taken by considering different low-cost hardware platforms, such as SDRplay and Airspy, which may be better fit for specific industrial spectrum monitoring applications. Also, video tutorials on [Software Defined Radio with HackRF](http://greatscottgadgets.com/sdr/) will introduce users to HackRF One and software defined radio (SDR) with the GNU Radio toolkit.  
 
-
-(Include a more complete description about the basis on Gnu Radio, the hardware tested, limitations, example)
 
 ## Installation
 
