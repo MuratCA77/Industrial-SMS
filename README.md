@@ -20,8 +20,7 @@ It is recommended getting started by watching video tutorials on [Software Defin
 The ISMS has been tested on Ubuntu Linux 14.04 LTS. Installation instructions for Ubuntu can be found on [help.ubuntu.com/14.04/installation-guide](https://help.ubuntu.com/14.04/installation-guide/).
 
 ### GNU Radio
-The installation instructions for GNU Radio software development toolkit providing digital signal processing blocks to design software-defined radios can be found on [Installing GNU Radio From Source](https://wiki.gnuradio.org/index.php/InstallingGRFromSource).
-
+The installation instructions for GNU Radio software development toolkit providing digital signal processing blocks to design software-defined radios can be found on [Installing GNU Radio](https://github.com/mossmann/hackrf/wiki/Operating-System-Tips).
 
 ### HackRF
 (How to get and install HackRF)
