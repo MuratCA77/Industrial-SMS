@@ -32,16 +32,16 @@ The installation instructions for HackRF One can be found on [Installing HackRF 
 ## Running the ISMS
 The software consists of two parts: radio scanner (gr-scan-monitor) and signal monitor (hackrf-monitor). Scanner is a modified version of gr-scan tool and signal monitor is an independent project. Both packages can be built using make command inside corresponding directory.
 
-In order to run the system, the user needs to specify scanning parameters, and run monitor that will display scan results. Scanner and monitor are independent. Scanner can be stopped and launched with different set of parameters without closing monitor.
-The only required scan parameters are start and end frequencies, in this case the following command should be used:
+In order to run the system, the user needs to specify scanning parameters and run monitor that will display scan results. Scanner and monitor are independent. Scanner can be stopped and launched with different set of parameters without closing monitor.
+The only required scan parameters are start and end frequencies. For instance, the following command should be used for 2.4 GHz ISM band :
 ```
 ./gr-scan -x 2400 -y 2500
 ```
 Options are: 
 
 ```
--x <starting frequency>
--y <ending frequency>
+-x <starting frequency in MHz>
+-y <ending frequency in MHz>
 ```
 
 Other available options include:
