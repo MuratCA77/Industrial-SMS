@@ -57,18 +57,14 @@ Other available options include:
 -g <G> - set baseband gain to G dB (for HackRF One, valid range is 0-62 dB with 2 dB steps)
 -A <a> - turn AGC on/off (1 and 0 correspondingly), when turned on, AGC overrides IF and antenna gains
 ```
-
-
-
-
-
-
-
-Then, in another windows, run the monitor: 
+When scanner is launched, the user can run the monitor in another terminal with the following command:
 ```
-monitor
+./sdr_processor 
 ```
-(Explain how to use it, e.g., the zoomming, other features you can use during a run)
+The monitor has no command line parameters. In graphical interface, there are two charts: full range chart with frequencies from 100 to 6000 MHz and zoom window with adjustable range. Zoom window is centered with mouse: when cursor is in bottom third of the screen, zoom window central frequency corresponds to full range frequency which is under mouse cursor.
+
+Zoom window frequency range is adjusted with mouse scroll wheel. When left shift key is pressed, mouse wheel changes power scale of both charts. When left alt key is pressed, mouse wheel changes zero level of both charts.
+
 
 ### Sample Output
 
