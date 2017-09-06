@@ -30,14 +30,12 @@ The installation instructions for HackRF One can be found on [Installing HackRF 
 [Where to Buy](http://greatscottgadgets.com/wheretobuy/) will provide the user with information on how to get HackRF One and [This Video Tutorial](http://greatscottgadgets.com/sdr/5/) is especially essential to understand the firmware configuration of this specific hardware. 
 
 ## Running the ISMS
+The software consists of two parts: radio scanner (gr-scan-monitor) and signal monitor (hackrf-monitor). Scanner is a modified version of gr-scan tool and signal monitor is an independent project. Both packages can be built using make command inside corresponding directory.
 
-
-(How to run it, i.e., what you type at the command line)
-
-Run the SMS on the command line like this:
-Here is how to run the software:
+In order to run the system, the user needs to specify scanning parameters, and run monitor that will display scan results. Scanner and monitor are independent. Scanner can be stopped and launched with different set of parameters without closing monitor.
+The only required scan parameters are start and end frequencies, in this case the following command should be used:
 ```
-gr-scan -x 2400 -y 2500
+./gr-scan -x 2400 -y 2500
 ```
 Options include: 
 
