@@ -68,7 +68,9 @@ Zoom window frequency range is adjusted with mouse scroll wheel. When left shift
 
 ### Sample Output
 
-(include some sample output, and screen shots)
+The followings are some sample screenshots during the continuous scan of the system for microwave oven and NIST Shops experiments
+
+
 
 # Principles of Operation
 The SMS runs continously, measuring the power at samples in a small frequency range over a short period of time, and computing a fast Fourier transform (FFT) to identify frequency components present. 
