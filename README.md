@@ -37,12 +37,33 @@ The only required scan parameters are start and end frequencies, in this case th
 ```
 ./gr-scan -x 2400 -y 2500
 ```
-Options include: 
+Options are: 
 
 ```
 -x <starting frequency>
 -y <ending frequency>
 ```
+
+Other available options include:
+
+```
+-a <N> - average over N FFT samples at each frequency, reasonable range is 20-2000
+-r <N> - set sample rate of N Msamples/s (HackRF One is capable of 20 Msps)
+-w <W> - set FFT width to W points
+-z <S> - set frequency step of S MHz
+-G <G> - set total gain of G dB (if greater than 0, this parameter overrides individual three gains)
+-i <G> - set IF gain to G dB (for HackRF One, valid range is 0-40 dB with 8 dB steps)
+-t <G> - set antenna gain to G dB (for HackRF One, valid values are 0 or 14 dB)
+-g <G> - set baseband gain to G dB (for HackRF One, valid range is 0-62 dB with 2 dB steps)
+-A <a> - turn AGC on/off (1 and 0 correspondingly), when turned on, AGC overrides IF and antenna gains
+```
+
+
+
+
+
+
+
 Then, in another windows, run the monitor: 
 ```
 monitor
