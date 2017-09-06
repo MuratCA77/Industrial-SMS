@@ -48,7 +48,7 @@ Other available options include:
 
 ```
 -a <N> - average over N FFT samples at each frequency, reasonable range is 20-2000
--r <N> - set sample rate of N Msamples/s (HackRF One is capable of 20 Msps)
+-r <N> - set sample rate of N Msamples/s (HackRF One is capable of up to 20 Msps)
 -w <W> - set FFT width to W points
 -z <S> - set frequency step of S MHz
 -G <G> - set total gain of G dB (if greater than 0, this parameter overrides individual three gains)
