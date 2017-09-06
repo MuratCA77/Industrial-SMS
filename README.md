@@ -68,13 +68,13 @@ Zoom window frequency range is adjusted with mouse scroll wheel. When left shift
 
 ### Sample Output
 
-The followings are some sample screenshots during the continuous scan of the system for microwave oven and NIST Shops experiments:   
+The followings are some sample screenshots during the continuous scan of the system for microwave oven and NIST Shops experiments: 
 
-ISMS monitor displaying microwave oven signal at 2465 MHz along with WiFi signals:
+ISMS monitor displaying microwave oven interfering signal at 2465 MHz along with WiFi signals:
 
 ![terminal output_1](https://user-images.githubusercontent.com/19610600/30132362-1cccd1d2-931e-11e7-9a19-d70d5f8b4d49.jpg)
 
-Spectrum analyzer confirming what is being displayed by the monitor:
+Spectrum analyzer confirming microwave oven interfering signal displayed by the monitor:
 
 ![speca](https://user-images.githubusercontent.com/19610600/30132491-7c90b386-931e-11e7-85c2-2c8151ac362f.jpg)
 
